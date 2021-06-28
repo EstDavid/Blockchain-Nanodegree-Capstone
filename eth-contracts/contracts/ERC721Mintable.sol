@@ -43,10 +43,10 @@ contract Pausable is Ownable {
 //  1) create a private '_paused' variable of type bool
 bool _paused;
 //  2) create a public setter using the inherited onlyOwner modifier
-function setPause(bool newState) public onlyOwner {
-    require(newState != _paused, "The contract was already set to the desired paused/unpaused state");
-    _paused = newState;
-    if (newState) {
+function setPause(bool paused) public onlyOwner {
+    require(paused != _paused, "The contract was already set to the desired paused/unpaused state");
+    _paused = paused;
+    if (paused) {
         emit Paused(msg.sender);
     } 
     else {
@@ -159,7 +159,7 @@ contract ERC721 is Pausable, ERC165 {
     }
 
 //    @dev Approves another address to transfer the given token ID
-    function approve(address to, uint256 tokenId) public {
+    function approve(address to, uint256 tokenId) public whenNotPaused{
         
         // TODO require the given address to not be the owner of the tokenId
         require(to != _tokenOwner[tokenId], "Given address is owner of the token");
@@ -187,7 +187,7 @@ contract ERC721 is Pausable, ERC165 {
      * @param to operator address to set the approval
      * @param approved representing the status of the approval to be set
      */
-    function setApprovalForAll(address to, bool approved) public {
+    function setApprovalForAll(address to, bool approved) public whenNotPaused {
         require(to != msg.sender, "To address cannot be the same as the caller's");
         _operatorApprovals[msg.sender][to] = approved;
         emit ApprovalForAll(msg.sender, to, approved);
@@ -203,13 +203,13 @@ contract ERC721 is Pausable, ERC165 {
         return _operatorApprovals[owner][operator];
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public {
+    function transferFrom(address from, address to, uint256 tokenId) public whenNotPaused {
         require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not approved or owner");
 
         _transferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId) public {
+    function safeTransferFrom(address from, address to, uint256 tokenId) public whenNotPaused {
         safeTransferFrom(from, to, tokenId, "");
     }
 
@@ -549,7 +549,7 @@ contract InmoToken is ERC721Metadata {
 
     constructor (string memory name, string memory symbol, string memory baseTokenURI) ERC721Metadata(name, symbol, baseTokenURI) public {}
 
-    function mint(address to, uint256 tokenId) public onlyOwner returns(bool) {
+    function mint(address to, uint256 tokenId) public onlyOwner whenNotPaused returns(bool) {
         
         _mint(to, tokenId);
         setTokenURI(tokenId);
