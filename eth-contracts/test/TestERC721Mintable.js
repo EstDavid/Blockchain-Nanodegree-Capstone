@@ -8,12 +8,14 @@ contract('TestERC721Mintable', accounts => {
     
     const numberTokens = 5;
 
+    const tokenName = "Digital Property";
+    const symbol = "INM";
     const baseTokenURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
 
     describe('match erc721 spec', function () {        
 
         beforeEach(async function () { 
-            this.contract = await ERC721MintableComplete.new("Casita", "INM", baseTokenURI, {from: account_one});
+            this.contract = await ERC721MintableComplete.new(tokenName, symbol, baseTokenURI, {from: account_one});
 
             // TODO: mint multiple tokens
             for(let i = 0; i < numberTokens; i++) {
@@ -58,17 +60,17 @@ contract('TestERC721Mintable', accounts => {
 
     describe('have ownership properties', function () {
         beforeEach(async function () { 
-            this.contract = await ERC721MintableComplete.new("Casita", "INM", baseTokenURI, {from: account_one});
+            this.contract = await ERC721MintableComplete.new(tokenName, symbol, baseTokenURI, {from: account_one});
         })
 
         it('should fail when minting when address is not contract owner', async function () {
-            let tokenId = 1;
+            let tokenId = 4;
 
             let reason = "Caller should be the owner of the contract";
 
             try {
                 await this.contract.mint(account_two, tokenId, {from: account_two});
-                assert.fail("Function should fail");
+                assert.fail("Minting should fail if not called by contract owner");
             }
             catch(e) {
                 assert.equal(e.reason, reason, "The error message should match the expected reason");
@@ -81,6 +83,118 @@ contract('TestERC721Mintable', accounts => {
 
             assert.equal(owner, account_one, "Owner of the contract should be account one");
             
+        });
+    });
+
+    describe('is a pausable contract', function () {
+        before(async function () { 
+            this.contract = await ERC721MintableComplete.new(tokenName, symbol, baseTokenURI, {from: account_one});
+            let tokenId = 1;
+            await this.contract.mint(account_two, tokenId, {from: account_one});
+        })
+
+        it('should fail to be paused when caller address is not contract owner', async function () {
+            let reason = "Caller should be the owner of the contract";
+
+            let paused = true;
+
+            try {
+                await this.contract.setPause(paused, {from: account_two});
+                assert.fail("Pausing should fail when not called by contract owner");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }                        
+        });
+
+        it('should be possible for the contract owner to pause it', async function () {
+            let paused = true;
+            let eventName = "Paused";
+
+            let result = await this.contract.setPause(paused, {from: account_one});
+
+            let eventType = result.logs[0].event;
+            let eventResult = result.logs[0].args.fromAddress;
+
+            assert.equal(eventType, eventName, "There should be a 'Paused' event being fired");
+            assert.equal(eventResult, account_one, "The result of the event should be the contract owner address");
+        });
+
+        it('should fail to mint while being paused', async function () {
+            let tokenId = 1;
+            let reason = "This function can only be called when contract is not paused";
+
+            try {
+                await this.contract.mint(account_two, tokenId, {from: account_one});
+                assert.fail("Minting should fail if contract is paused");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }
+        });
+
+        it('should fail to transfer while being paused', async function () {
+            let tokenId = 1;
+            let reason = "This function can only be called when contract is not paused";
+
+            try {
+                await this.contract.transferFrom(account_two, account_three, tokenId, {from: account_two});
+                assert.fail("Transfer should fail if contract is paused");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }
+        });
+
+        it('should fail to set approval while being paused', async function () {
+            let tokenId = 1;
+            let reason = "This function can only be called when contract is not paused";
+
+            try {
+                await this.contract.approve(account_three, tokenId, {from: account_two});
+                assert.fail("Approval should fail if contract is paused");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }
+        });
+
+        it('should fail to set approval for all while being paused', async function () {
+            let reason = "This function can only be called when contract is not paused";
+
+            try {
+                await this.contract.setApprovalForAll(account_three, true, {from: account_two});
+                assert.fail("Approval for all should fail if contract is paused");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }
+        });
+
+        it('should fail to be paused when already paused', async function () {
+            let paused = true;
+            let reason = "The contract was already set to the desired paused/unpaused state";
+
+            try {
+                await this.contract.setPause(paused, {from: account_one});
+                assert.fail("Pausing should fail if contract is paused");
+            }
+            catch(e) {
+                assert.equal(e.reason, reason, "The error message should match the expected reason");
+            }
+        });
+
+        it('should be possible for the contract owner to unpause it', async function () {
+            let paused = false;
+            let eventName = "Unpaused";
+
+            let result = await this.contract.setPause(paused, {from: account_one});
+
+            let eventType = result.logs[0].event;
+            let eventResult = result.logs[0].args.fromAddress;
+
+            assert.equal(eventType, eventName, "There should be an 'Unpaused' event being fired");
+            assert.equal(eventResult, account_one, "The result of the event should be the contract owner address");
         });
     });
 })
