@@ -1,4 +1,4 @@
-var ERC721MintableComplete = artifacts.require('InmoToken');
+var ERC721MintableComplete = artifacts.require('DigitalPropertyToken');
 
 contract('TestERC721Mintable', accounts => {
 
@@ -8,8 +8,8 @@ contract('TestERC721Mintable', accounts => {
     
     const numberTokens = 5;
 
-    const tokenName = "Digital Property";
-    const symbol = "INM";
+    const tokenName = "Digital Property Token";
+    const symbol = "DPT";
     const baseTokenURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
 
     describe('match erc721 spec', function () {        

@@ -1,11 +1,15 @@
 // migrating the appropriate contracts
-//var SquareVerifier = require("../../zokrates/code/square/verifier.sol");
-//import "../../zokrates/code/square/verifier.sol";
 var SquareVerifier = artifacts.require("Verifier");
-//var SolnSquareVerifier = artifacts.require("./SolnSquareVerifier.sol");
+var SolnSquareVerifier = artifacts.require("./SolnSquareVerifier.sol");
 
 
 module.exports = function(deployer) {
-deployer.deploy(SquareVerifier);
-  //deployer.deploy(SolnSquareVerifier);
+  const tokenName = "Digital Property Token";
+  const symbol = "DPT";
+  const baseTokenURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
+
+  deployer.deploy(SquareVerifier)
+    .then(() => {
+      return deployer.deploy(SolnSquareVerifier, tokenName, symbol, baseTokenURI, SquareVerifier.address);
+    });
 };
