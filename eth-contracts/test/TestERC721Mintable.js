@@ -5,8 +5,10 @@ contract('TestERC721Mintable', accounts => {
     const account_one = accounts[0];
     const account_two = accounts[1];
     const account_three = accounts[2];
+    const account_four = accounts[3];
+    const account_five = accounts[4];
     
-    const numberTokens = 5;
+    const numberTokens = 10;
 
     const tokenName = "Digital Property Token";
     const symbol = "DPT";
@@ -56,6 +58,41 @@ contract('TestERC721Mintable', accounts => {
             assert.equal(tokenBalanceFrom.toString(), (numberTokens - 1).toString(), "The balance of the 'From' owner was not updated");
             assert.equal(tokenBalanceTo.toString(), '1', "The balance of the 'To' owner was not updated");                        
         });
+
+        it('should allow transfer from approved address', async function () {
+            let tokenId = 4;
+
+            await this.contract.approve(account_three, tokenId, {from: account_two});
+
+            await this.contract.transferFrom(account_two, account_four, tokenId, {from: account_three});
+
+            let newTokenOwner = await this.contract.ownerOf(tokenId);
+
+            let tokenBalanceFrom = await this.contract.balanceOf(account_two);
+            let tokenBalanceTo = await this.contract.balanceOf(account_four);
+
+            assert.equal(newTokenOwner, account_four, "The new owner was not transferred the token");
+            assert.equal(tokenBalanceFrom.toString(), (numberTokens - 1).toString(), "The balance of the 'From' owner was not updated");
+            assert.equal(tokenBalanceTo.toString(), '1', "The balance of the 'To' owner was not updated");                        
+        });
+
+        it('should allow transfer from approvedForAll address', async function () {
+            let tokenId = 5;
+
+            await this.contract.setApprovalForAll(account_five, true, {from: account_two});
+
+            await this.contract.transferFrom(account_two, account_four, tokenId, {from: account_five});
+
+            let newTokenOwner = await this.contract.ownerOf(tokenId);
+
+            let tokenBalanceFrom = await this.contract.balanceOf(account_two);
+            let tokenBalanceTo = await this.contract.balanceOf(account_four);
+
+            assert.equal(newTokenOwner, account_four, "The new owner was not transferred the token");
+            assert.equal(tokenBalanceFrom.toString(), (numberTokens - 1).toString(), "The balance of the 'From' owner was not updated");
+            assert.equal(tokenBalanceTo.toString(), '1', "The balance of the 'To' owner was not updated");                        
+        });
+
     });
 
     describe('have ownership properties', function () {

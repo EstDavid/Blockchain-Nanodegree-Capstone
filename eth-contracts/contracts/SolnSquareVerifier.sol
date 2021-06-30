@@ -51,15 +51,16 @@ contract SolnSquareVerifier is DigitalPropertyToken {
 //  - make sure you handle metadata as well as tokenSupply
     function mintNFT(
                     uint[2] memory a,
-                    uint[2][2] memory b,
+                    uint[2] memory b0,
+                    uint[2] memory b1,
                     uint[2] memory c,
                     uint[2] memory inputs,
                     address solutionOwner
                     ) 
                     public {
-        bool verified = verifier.verifyTx(a, b, c, inputs);
+        bool verified = verifier.verifyTx(a, [b0, b1], c, inputs);
         require(verified, "Solution is not valid");
-        bytes32 key = keccak256(abi.encodePacked(a, b, c, inputs, solutionOwner));
+        bytes32 key = keccak256(abi.encodePacked(a, [b0, b1], c, inputs, solutionOwner));
         require(uniqueSolutions[key].isSolution == false, "Solution already exists");
         uint256 newTokenId = totalSupply() + 1;
         mint(solutionOwner, newTokenId);
