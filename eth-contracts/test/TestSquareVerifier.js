@@ -2,8 +2,6 @@
 var verifierContract = artifacts.require("Verifier");
 var SampleProof = require('../../zokrates/code/square/proof');
 
-
-
 contract('TestSquareVerifier', accounts => {
 
     const account_one = accounts[0];
@@ -11,7 +9,6 @@ contract('TestSquareVerifier', accounts => {
     const b = SampleProof.proof.b;
     const c = SampleProof.proof.c;
     const inputs = SampleProof.inputs;
-    console.log(inputs);
 
     before(async function () {
         this.contract = await verifierContract.new(accounts);
