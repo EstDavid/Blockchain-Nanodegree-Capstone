@@ -41,7 +41,14 @@ contract SolnSquareVerifier is DigitalPropertyToken {
     event SolutionAdded(bytes32 key, address owner);
 
 // TODO Create a function to add the solutions to the array and emit the event
-    function addSolution(bytes32 key, uint256 tokenId, address solutionOwner) public {
+    function addSolution(
+                            bytes32 key,
+                            uint256 tokenId,
+                            address solutionOwner
+                        ) 
+                        public 
+                        onlyOwner 
+                        whenNotPaused {
         uniqueSolutions[key] = solutions (tokenId, solutionOwner, true);
         emit SolutionAdded(key, solutionOwner);
     }
@@ -57,7 +64,9 @@ contract SolnSquareVerifier is DigitalPropertyToken {
                     uint[2] memory inputs,
                     address solutionOwner
                     ) 
-                    public {
+                    public 
+                    onlyOwner 
+                    whenNotPaused  {
         bool verified = verifier.verifyTx(a, [b0, b1], c, inputs);
         require(verified, "Solution is not valid");
         bytes32 key = keccak256(abi.encodePacked(a, [b0, b1], c, inputs, solutionOwner));

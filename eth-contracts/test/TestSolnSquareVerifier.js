@@ -45,7 +45,7 @@ contract('TestSolnSquareVerifier', accounts => {
                                             inputs[1],
                                             account_two);
 
-        let eventTx = await this.solnSquareVerifierContract.addSolution(key, tokenId, account_two, {from: account_two});
+        let eventTx = await this.solnSquareVerifierContract.addSolution(key, tokenId, account_two, {from: account_one});
         let result = await this.solnSquareVerifierContract.uniqueSolutions.call(key);
 
         let eventType = eventTx.logs[0].event;
